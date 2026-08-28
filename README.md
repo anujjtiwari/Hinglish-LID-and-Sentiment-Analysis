@@ -21,12 +21,12 @@ python3 main.py # reproduction
 - Nishant Sharma - [rockbnishant](https://github.com/Rockbnishant)
 - Durgesh Mishra - [durg3sh10](https://github.com/durg3sh10)
 - Rahul - [rahulkumawat835](https://github.com/rahulkumawat835)
-- Lavish Jangid [lavish-j](https://github.com/lavish-j)
-- Harshiddhi Pathak []()
+- Lavish Jangid - [lavish-j](https://github.com/lavish-j)
+- Harshiddhi Pathak - [horikita-99](https://github.com/horikita-99)
 - Anuj Tiwari []()
 - Harsh Krishnadev Dubey []()
 - Suvasish Das - [suvasish114](https://github.com/suvasish114)
 
-<!-- <a href="https://github.com/suvasish114/suvasish114.github.io/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=suvasish114/suvasish114.github.io" />
-</a> -->
+<!-- <br><br>
+
+<a href="https://github.com/suvasish114/Hinglish-LID-and-Sentiment-Analysis/graphs/contributors"><img src="https://contrib.rocks/image?repo=suvasish114/Hinglish-LID-and-Sentiment-Analysis" /></a> -->
