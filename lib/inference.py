@@ -70,7 +70,7 @@ class c4ai_command_a_03_2025(BaseModel):
 
 class Llama_3_1_8B_Instruct(BaseModel):
     def __init__(self, zero_shot_prompt_path, one_shot_prompt_path, input_csv_file_path: str, output_csv_file_path: str, max_tokens: int = 2048, temperature: float = 0.0):
-        print("[+] Initializing c4ai_command_a_03_2025 model...")
+        print("[+] Initializing Llama_3_1_8B_Instruct model...")
         super().__init__(zero_shot_prompt_path=zero_shot_prompt_path, one_shot_prompt_path=one_shot_prompt_path, input_csv_file_path=input_csv_file_path, output_csv_file_path=output_csv_file_path, max_tokens=max_tokens, temperature=temperature)
         self.model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"
         self.model_name = "Llama-3.1-8B-Instruct"
@@ -95,13 +95,16 @@ class aya_expanse_8b(BaseModel):
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
         self.model = AutoModelForCausalLM.from_pretrained(self.model_path, device_map="auto")
     
-    def get_response(self, shot, user_input: str, log = True) -> str:
+    def get_response(self, shot, user_input: str, log=True) -> str:
         print(f"[+] Getting response for shot={shot} and user_input='{user_input}'...") if log else None
         prompt = self.get_prompt(user_input, shot)
         messages = [{"role": "user", "content": prompt}]
-        input_ids = self.tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=True, return_tensors="pt")
-        gen_tokens = self.model.generate(input_ids,  max_new_tokens=100,  do_sample=True,  temperature=self.temperature,)
-        return self.tokenizer.decode(gen_tokens[0])
+        inputs = self.tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=True, return_tensors="pt", return_dict=True,)
+        inputs = {key: value.to(self.model.device) for key, value in inputs.items()}
+        gen_tokens = self.model.generate(**inputs, max_new_tokens=100, do_sample=False, temperature=self.temperature,)
+        input_length = inputs["input_ids"].shape[1]
+        generated_tokens = gen_tokens[0][input_length:]
+        return self.tokenizer.decode(generated_tokens, skip_special_tokens=True)
 
 class Qwen2_5_7B_Instruct(BaseModel):
     def __init__(self, zero_shot_prompt_path, one_shot_prompt_path, input_csv_file_path: str, output_csv_file_path: str, max_tokens: int = 2048, temperature: float = 0.0):

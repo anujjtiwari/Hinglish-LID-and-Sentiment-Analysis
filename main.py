@@ -1,5 +1,6 @@
 # PROGRAM GATEWAY
-import argparse
+from tqdm import tqdm
+import argparse, csv
 from lib.helper import add_unique_id
 from lib.inference import *
 
@@ -11,9 +12,10 @@ def parse_args(): # parsing all the arguments
     parser.add_argument("--test_data", type=str, required=True, help="Test dataset name")
     parser.add_argument("--max_seq_length", type=int, default=512, help="Maximum sequence length")
     parser.add_argument("--temperature", type=float, default=0.0, help="Temperature for sampling")
-    parser.add_argument("--function_name", type=str, required=True, help="Function name to call for inference")
     parser.add_argument("--zero_shot_prompt_path", type=str, required=False, help="Path to zero-shot prompt file")
     parser.add_argument("--one_shot_prompt_path", type=str, required=False, help="Path to one-shot prompt file")
+    parser.add_argument("--index_from", default=1, type=int, required=False, help="Path to one-shot prompt file")
+    parser.add_argument("--index_to", default=None, type=int, required=False, help="Path to one-shot prompt file")
     return parser.parse_args()
 
 if __name__ == "__main__": # driving code
@@ -26,11 +28,29 @@ if __name__ == "__main__": # driving code
         "meta-llama/Llama-3.3-70B-Instruct"     : Llama_3_3_70B_Instruct
     }
     args = parse_args() # config
-    add_unique_id(test_data, test_data) # add unique id to test CSV file
+    add_unique_id(args.test_data, args.test_data) # add unique id to test CSV file
 
     # final execution
-    output_file = output_path + "/" + args.model_id.split("/")[-1] + "_" + args.shot_value + "_shot.csv"
-    model = model_to_function[args.model_id]()(args.zero_shot_prompt_path, args.one_shot_prompt_path, args.test_data, output_file, max_seq_length=args.max_seq_length, temperature=args.temperature)
-    response = model.get_response(args.shot_value, "I love watching football") # get response based on shot value
-    print(f"[+] Response: {response}")
+    output_file = (f"{args.output_path}/" f"{model_to_function[args.model_id].__name__}_" f"{args.shot_value}_shot.csv")
+    model = model_to_function[args.model_id](args.zero_shot_prompt_path, args.one_shot_prompt_path, args.test_data, output_file, max_tokens=args.max_seq_length, temperature=args.temperature)
 
+    # Read input CSV row by row
+    with open(args.test_data, "r", encoding="utf-8") as input_csv:
+        reader = csv.DictReader(input_csv)
+        required_columns = {"id", "Sentences"} # sanity check
+        if not required_columns.issubset(reader.fieldnames):
+            raise ValueError(f"Input CSV must contain columns: {required_columns}. " f"Found: {reader.fieldnames}")
+        with open(output_file, "a", newline="", encoding="utf-8") as output_csv:
+            writer = csv.DictWriter(output_csv, fieldnames=["id", "predictions"])
+            writer.writeheader()
+            for row_number, row in tqdm(enumerate(reader, start=1), desc="Prompting"):
+                if row_number < args.index_from: # point to the start index
+                    continue
+                if args.index_to is not None and row_number >= args.index_to: # stop at the end index
+                    break
+                sample_id, sentence = row["id"], row["Sentences"]
+                print(f"[+] Processing row {row_number} | id={sample_id}")
+                prediction = model.get_response(args.shot_value, sentence, log=False)
+                writer.writerow({"id": sample_id, "predictions": prediction})
+                output_csv.flush()
+    print("[+] Inference completed.")
