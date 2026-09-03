@@ -98,3 +98,7 @@ Thumbs.db
 
 # Data card files
 comi_lingua_dataset/
+files_from_rajvee/
+
+# custom files
+batch.sh

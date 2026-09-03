@@ -2,6 +2,14 @@
 
 This project is under active development for partial fullfillment of grade requirement for course code CS613-NLP at Indian Institute of Technology Gandhinagar.
 
+### Download Model Checkpoints
+
+Run the below command to download the model checkpoints using CLI. Some of the model require authentication. Make sure you have authenticated your device before accessing the model.
+
+```sh
+python3 lib/download_model_checkpoints.py
+```
+
 ### Setup
 
 This project is depended on various python pip packages. Its recommended to use a virtual enviornment to keep your current workspace clearn. Use the below command sequentially
